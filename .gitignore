@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.DS_Store
+dist
+lib
+.nyc_output
+coverage
+es
+test/**/lcov.info
+test/**/lcov-report
+test/react/*/test/**/*.spec.js
+test/react/**/src
+lcov.info
