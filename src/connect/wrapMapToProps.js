@@ -49,7 +49,15 @@ export function wrapMapToPropsFunc(mapToProps, methodName) {
     proxy.mapToProps = function detectFactoryAndVerify(stateOrDispatch, ownProps) {
       //下面这里是重点，把mapToProps指向`connect.js`里传递进来的`mapXxToProps`,也就是我们组建写的：
       // const mapStateToProps = (state, ownProps) => ({myNeedProps: state.yourState})
+      // const mapDispatchToProps = dispatch => ({
+      //    actions: bindActionCreators(Object.assign({}, componentActions), dispatch)
+      // })
       // 不重写会死循环
+
+      //这里的proxy会在`selectorFactory.js`中再次调用。
+      // 你可以看selectorFactory.js中的`handleFirstCall`函数，接收的参数中有个state参数，
+      // 这个就是在`connectAdvanced.js`中的`makeSelectorStateful`函数调用的时候传递进来的`store.getState()`。
+      // 当然，分析这个`state`是在看到后半部的时候比较好。
       proxy.mapToProps = mapToProps
       proxy.dependsOnOwnProps = getDependsOnOwnProps(mapToProps)
       let props = proxy(stateOrDispatch, ownProps)
