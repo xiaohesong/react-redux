@@ -70,6 +70,7 @@ export default class Subscription {
   trySubscribe() {
     if (!this.unsubscribe) {
       //didMount订阅的时候，parentSub是null.所以unsubscribe是redux的store在订阅
+      // 这样每次`dispatch`之后都会触发`store.subscribe`去执行`onStateChange`。
       this.unsubscribe = this.parentSub
         ? this.parentSub.addNestedSub(this.onStateChange)
         : this.store.subscribe(this.onStateChange)
