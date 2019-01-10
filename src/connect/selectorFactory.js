@@ -60,8 +60,10 @@ export function pureFinalPropsSelectorFactory(
     //   proxy.mapToProps(stateOrDispatch, ownProps) :
     //   proxy.mapToProps(stateOrDispatch)
     // }
-  
-
+    
+    // 为了直接点，
+    // 下面为什么判断呢，因为props改变了
+    // 如果依赖props，那么改变了就需要重新传参
     if (mapDispatchToProps.dependsOnOwnProps)
       dispatchProps = mapDispatchToProps(dispatch, ownProps)
 
@@ -70,9 +72,12 @@ export function pureFinalPropsSelectorFactory(
   }
 
   function handleNewProps() {
+    //下面为什么判断呢，因为props改变了
+    // 如果依赖props，那么改变了就需要重新传参
     if (mapStateToProps.dependsOnOwnProps)
       stateProps = mapStateToProps(state, ownProps)
 
+    // 这个也是同样的道理
     if (mapDispatchToProps.dependsOnOwnProps)
       dispatchProps = mapDispatchToProps(dispatch, ownProps)
 
@@ -81,10 +86,13 @@ export function pureFinalPropsSelectorFactory(
   }
 
   function handleNewState() {
+    //状态改变了，props没有改变，为什么要获取stateProps呢
+    // 为了判断state改变是否影响到了前一个，如果影响了就返回新的mergedProps,否则就返回之前的，不进行更新。
     const nextStateProps = mapStateToProps(state, ownProps)
     const statePropsChanged = !areStatePropsEqual(nextStateProps, stateProps)
     stateProps = nextStateProps
 
+    //到这里就说明props没有改变，如果stateprops改变了，那是需要重新mergeProps
     if (statePropsChanged)
       mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
 
