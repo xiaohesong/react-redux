@@ -44,6 +44,9 @@ export function wrapMapToPropsFunc(mapToProps, methodName) {
     }
 
     // allow detectFactoryAndVerify to get ownProps
+    // 允许detectFactoryAndVerify接收ownProps, 
+    // 因为第一次执行的时候，可以得到proxy.dependsOnOwnProps => true, 
+    // 导致上面的代码运行的是proxy.mapToProps(stateOrDispatch, ownProps)
     proxy.dependsOnOwnProps = true
 
     proxy.mapToProps = function detectFactoryAndVerify(stateOrDispatch, ownProps) {
@@ -60,6 +63,7 @@ export function wrapMapToPropsFunc(mapToProps, methodName) {
       // 当然，分析这个`state`是在看到后半部的时候比较好。
       proxy.mapToProps = mapToProps
       proxy.dependsOnOwnProps = getDependsOnOwnProps(mapToProps)
+      //下面这个等于调用proxy.mapToProps，但是这个时候的mapToProps已经是我们定义的那个mapXxToProps了
       let props = proxy(stateOrDispatch, ownProps)
 
       if (typeof props === 'function') {

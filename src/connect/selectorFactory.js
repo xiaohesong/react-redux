@@ -43,7 +43,24 @@ export function pureFinalPropsSelectorFactory(
   }
 
   function handleNewPropsAndNewState() {
+    // 你可能好奇，为啥有的要dependsOnOwnProps.
+    // 其实不管怎么样，他都会在proxy.mapToProps里判断
+    // 因为state和props都有改变，所以直接mapStateToProps
+
+    // 有一点比较好奇，这个是根据ownProps判断dependsOnOwnProps.看文档
+    // https://react-redux.js.org/api/connect#the-arity-of-maptoprops-functions
+    // mapStateToProps = (state, ownProps = {}) => {} 这样的ownProps是不会作为第二个参数。表示很奇怪。
+    // 看此Issue查看 https://github.com/xiaohesong/react-redux/issues/1
+    
     stateProps = mapStateToProps(state, ownProps)
+
+    // 而且下面这个其实可以也不用判断，因为在方法里有判断
+    // const proxy = function mapToPropsProxy(stateOrDispatch, ownProps) {
+    // return proxy.dependsOnOwnProps ?
+    //   proxy.mapToProps(stateOrDispatch, ownProps) :
+    //   proxy.mapToProps(stateOrDispatch)
+    // }
+  
 
     if (mapDispatchToProps.dependsOnOwnProps)
       dispatchProps = mapDispatchToProps(dispatch, ownProps)
@@ -74,18 +91,23 @@ export function pureFinalPropsSelectorFactory(
     return mergedProps
   }
 
+  // 下面是二次调用的时候的一些步骤
   function handleSubsequentCalls(nextState, nextOwnProps) {
+    // 浅比较, 默认都是shallowEqual的对比，但是存在用户定义的情况。
     const propsChanged = !areOwnPropsEqual(nextOwnProps, ownProps)
     const stateChanged = !areStatesEqual(nextState, state)
     state = nextState
     ownProps = nextOwnProps
 
+    // 下面根据情况来了
+    //都改变，那就处理新的state和props，并返回
     if (propsChanged && stateChanged) return handleNewPropsAndNewState()
     if (propsChanged) return handleNewProps()
     if (stateChanged) return handleNewState()
     return mergedProps
   }
 
+  // hasRunAtLeastOnce是初始化和更新的区别
   return function pureFinalPropsSelector(nextState, nextOwnProps) {
     return hasRunAtLeastOnce
       ? handleSubsequentCalls(nextState, nextOwnProps)
@@ -119,9 +141,13 @@ export default function finalPropsSelectorFactory(dispatch, {
     verifySubselectors(mapStateToProps, mapDispatchToProps, mergeProps, options.displayName)
   }
 
+  //根据pure(用户传递的参数，默认是true)判断
   const selectorFactory = options.pure
-    ? pureFinalPropsSelectorFactory
-    : impureFinalPropsSelectorFactory
+
+    //根据hasRunAtLeastOnce来判断是不是第一次渲染，第一次渲染等同于impure...方法
+    // 不是第一次渲染，就会判断到底是哪个改变，直接返回
+    ? pureFinalPropsSelectorFactory 
+    : impureFinalPropsSelectorFactory //此方法直接返回所有map的props merge起来返回
 
   // 上面返回了mapToProps之后，实则是返回了proxy.
   return selectorFactory(
