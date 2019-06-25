@@ -53,6 +53,7 @@ class Provider extends Component {
   }
 
   render() {
+    // 这里如果没有，就给他个默认的
     const Context = this.props.context || ReactReduxContext
 
     return (
