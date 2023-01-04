@@ -2,7 +2,7 @@
   "private": true,
   "devDependencies": {
     "create-react-class": "^15.6.3",
-    "jest": "^23.4.2",
+    "jest": "^29.3.1",
     "react": "^0.14.9",
     "react-dom": "^0.14.8"
   },
